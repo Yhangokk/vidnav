@@ -8,6 +8,7 @@ interface WebsiteMetadata {
     title: string
     description: string
     icon: string
+    image?: string
 }
 
 export async function POST(request: Request) {
@@ -30,10 +31,33 @@ export async function POST(request: Request) {
             throw new Error('Failed to fetch valid metadata')
         }
 
-        // 如果获取到了 favicon，下载并上传到 GitHub
-        if (metadata.icon) {
+        // 处理封面/OG图片
+        if (metadata.image) {
             try {
-                const iconUrl = await downloadAndUploadIcon(metadata.icon, session.user.accessToken)
+                // 使用页面 URL 作为 Referer，并将文件前缀设为 'cover'，存储到 assets/cover 目录
+                const imageUrl = await downloadAndUploadIcon(
+                    metadata.image,
+                    session.user.accessToken,
+                    url,
+                    'cover',
+                    'assets/cover'
+                )
+                metadata.image = imageUrl
+            } catch (error) {
+                console.warn('Failed to download image:', error)
+                // 失败保留原URL
+            }
+        }
+
+        // 如果获取到了 favicon，下载并上传到 GitHub
+        // 对于视频链接（如 Bilibili），如果已有封面图片，则不需要处理 favicon
+        const isVideoUrl = extractBilibiliVideoId(url) !== null
+        const skipFavicon = isVideoUrl && metadata.image
+
+        if (metadata.icon && !skipFavicon) {
+            try {
+                // 使用页面 URL 作为 Referer
+                const iconUrl = await downloadAndUploadIcon(metadata.icon, session.user.accessToken, url, 'favicon')
                 metadata.icon = iconUrl
 
             } catch (error) {
@@ -69,8 +93,90 @@ function isValidUrl(string: string): boolean {
     }
 }
 
+// 从 Bilibili 链接中提取 BV 或 AV 号
+function extractBilibiliVideoId(url: string): { bvid?: string; aid?: string } | null {
+    try {
+        const urlObj = new URL(url)
+        if (!urlObj.hostname.includes('bilibili.com')) {
+            return null
+        }
+
+        // 匹配 BV 号: /video/BVxxxxxxx 或 /video/BV1xxxxx
+        const bvidMatch = urlObj.pathname.match(/\/video\/(BV[a-zA-Z0-9]+)/)
+        if (bvidMatch) {
+            return { bvid: bvidMatch[1] }
+        }
+
+        // 匹配 AV 号: /video/avxxxxxxx
+        const avidMatch = urlObj.pathname.match(/\/video\/av(\d+)/)
+        if (avidMatch) {
+            return { aid: avidMatch[1] }
+        }
+
+        return null
+    } catch {
+        return null
+    }
+}
+
+// 通过 Bilibili API 获取视频信息
+async function fetchBilibiliVideoInfo(videoId: { bvid?: string; aid?: string }): Promise<WebsiteMetadata | null> {
+    try {
+        let apiUrl: string
+        if (videoId.bvid) {
+            apiUrl = `https://api.bilibili.com/x/web-interface/view?bvid=${videoId.bvid}`
+        } else if (videoId.aid) {
+            apiUrl = `https://api.bilibili.com/x/web-interface/view?aid=${videoId.aid}`
+        } else {
+            return null
+        }
+
+        const response = await fetch(apiUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+                'Referer': 'https://www.bilibili.com/'
+            },
+            signal: AbortSignal.timeout(5000)
+        })
+
+        if (!response.ok) {
+            console.warn('Bilibili API request failed:', response.status)
+            return null
+        }
+
+        const data = await response.json()
+
+        if (data.code !== 0 || !data.data) {
+            console.warn('Bilibili API returned error:', data.message)
+            return null
+        }
+
+        const videoData = data.data
+
+        return {
+            title: videoData.title || '',
+            description: videoData.desc || '',
+            icon: '/assets/icons/bilibili.svg', // 使用本地 Bilibili 图标
+            image: videoData.pic || undefined // Bilibili 视频封面
+        }
+    } catch (error) {
+        console.warn('Failed to fetch Bilibili video info:', error)
+        return null
+    }
+}
+
 async function fetchWebsiteMetadata(url: string): Promise<WebsiteMetadata> {
     try {
+        // 优先处理 Bilibili 视频链接
+        const bilibiliVideoId = extractBilibiliVideoId(url)
+        if (bilibiliVideoId) {
+            const bilibiliInfo = await fetchBilibiliVideoInfo(bilibiliVideoId)
+            if (bilibiliInfo) {
+                return bilibiliInfo
+            }
+            // 如果 Bilibili API 失败，继续走通用逻辑
+        }
+
         const headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -153,13 +259,19 @@ function parseMetadataFromHtml(html: string, url: string): WebsiteMetadata {
         extractMetaContent(html, 'twitter:description') ||
         ''
 
+    // 解析 OG Image
+    const image = extractMetaContent(html, 'og:image') ||
+        extractMetaContent(html, 'twitter:image') ||
+        extractMetaContent(html, 'image')
+
     // 获取 favicon
     let icon = extractFavicon(html, url)
 
     return {
         title: title.trim(),
         description: description.trim(),
-        icon: icon || ''
+        icon: icon || '',
+        image: image || undefined
     }
 }
 
@@ -175,7 +287,9 @@ function extractMetaContent(html: string, name: string): string | null {
         new RegExp(`<meta[^>]*name=["']${name}["'][^>]*content=["']([^"']*)["']`, 'i'),
         new RegExp(`<meta[^>]*content=["']([^"']*)["'][^>]*name=["']${name}["']`, 'i'),
         new RegExp(`<meta[^>]*property=["']${name}["'][^>]*content=["']([^"']*)["']`, 'i'),
-        new RegExp(`<meta[^>]*content=["']([^"']*)["'][^>]*property=["']${name}["']`, 'i')
+        new RegExp(`<meta[^>]*content=["']([^"']*)["'][^>]*property=["']${name}["']`, 'i'),
+        new RegExp(`<meta[^>]*itemprop=["']${name}["'][^>]*content=["']([^"']*)["']`, 'i'),
+        new RegExp(`<meta[^>]*content=["']([^"']*)["'][^>]*itemprop=["']${name}["']`, 'i')
     ]
 
     for (const pattern of patterns) {
@@ -236,7 +350,7 @@ async function downloadGoogleFavicon(domain: string, token: string): Promise<str
         if (response.ok) {
             const arrayBuffer = await response.arrayBuffer()
             const binaryData = new Uint8Array(arrayBuffer)
-            const { path } = await uploadImageToGitHub(binaryData, token, 'png')
+            const { path } = await uploadImageToGitHub(binaryData, token, 'png', 'favicon')
             return path
         } else {
             throw new Error(`Failed to download Google favicon: ${response.status}`)
@@ -246,27 +360,49 @@ async function downloadGoogleFavicon(domain: string, token: string): Promise<str
     }
 }
 
-async function downloadAndUploadIcon(iconUrl: string, token: string): Promise<string> {
-    // 多种策略尝试下载favicon
-    const strategies: Array<{ headers: HeadersInit; delay?: number }> = [
-        // 策略1: 完整浏览器模拟
-        {
+async function downloadAndUploadIcon(
+    iconUrl: string,
+    token: string,
+    referer?: string,
+    prefix: string = 'favicon',
+    folder: string = 'assets'
+): Promise<string> {
+    // 判断是否是 Bilibili CDN 图片
+    const isBilibiliCdn = iconUrl.includes('hdslb.com') || iconUrl.includes('bilibili.com')
+
+    // 多种策略尝试下载图片
+    const strategies: Array<{ headers: HeadersInit; delay?: number }> = []
+
+    if (isBilibiliCdn) {
+        // Bilibili CDN 专用策略
+        strategies.push({
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
                 'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
                 'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-                'Accept-Encoding': 'gzip, deflate, br, zstd',
-                'Referer': new URL(iconUrl).origin + '/',
-                'Sec-Ch-Ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
-                'Sec-Ch-Ua-Mobile': '?0',
-                'Sec-Ch-Ua-Platform': '"macOS"',
-                'Sec-Fetch-Dest': 'image',
-                'Sec-Fetch-Mode': 'no-cors',
-                'Sec-Fetch-Site': 'same-origin'
-            },
-            delay: 1000
-        }
-    ]
+                'Referer': 'https://www.bilibili.com/',
+                'Origin': 'https://www.bilibili.com'
+            }
+        })
+    }
+
+    // 通用策略: 完整浏览器模拟
+    strategies.push({
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'Referer': referer || new URL(iconUrl).origin + '/',
+            'Sec-Ch-Ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"macOS"',
+            'Sec-Fetch-Dest': 'image',
+            'Sec-Fetch-Mode': 'no-cors',
+            'Sec-Fetch-Site': 'cross-site'
+        },
+        delay: 1000
+    })
 
     let lastError: Error | null = null
 
@@ -283,7 +419,13 @@ async function downloadAndUploadIcon(iconUrl: string, token: string): Promise<st
                 const binaryData = new Uint8Array(arrayBuffer)
 
                 // 上传到 GitHub
-                const { path } = await uploadImageToGitHub(binaryData, token, getFileExtension(iconUrl))
+                const { path } = await uploadImageToGitHub(
+                    binaryData,
+                    token,
+                    getFileExtension(iconUrl),
+                    prefix,
+                    folder
+                )
                 return path
             } else {
                 lastError = new Error(`HTTP ${response.status}: ${response.statusText}`)
@@ -304,7 +446,7 @@ function getFileExtension(url: string): string {
         const pathname = new URL(url).pathname
         const extension = pathname.split('.').pop()?.toLowerCase()
 
-        if (extension && ['png', 'jpg', 'jpeg', 'gif', 'svg', 'ico'].includes(extension)) {
+        if (extension && ['png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'webp'].includes(extension)) {
             return extension
         }
         return 'png' // 默认扩展名
@@ -313,11 +455,20 @@ function getFileExtension(url: string): string {
     }
 }
 
-async function uploadImageToGitHub(binaryData: Uint8Array, token: string, extension: string = 'png'): Promise<{ path: string, commitHash: string }> {
+async function uploadImageToGitHub(
+    binaryData: Uint8Array,
+    token: string,
+    extension: string = 'png',
+    prefix: string = 'favicon',
+    folder: string = 'assets'
+): Promise<{ path: string, commitHash: string }> {
     const owner = process.env.GITHUB_OWNER!
     const repo = process.env.GITHUB_REPO!
     const branch = process.env.GITHUB_BRANCH || 'main'
-    const path = `/assets/favicon_${Date.now()}.${extension}`
+
+    // 移除 folder 开头和结尾的斜杠，避免路径错误
+    const cleanFolder = folder.replace(/^\/+|\/+$/g, '')
+    const path = `/${cleanFolder}/${prefix}_${Date.now()}.${extension}`
     const githubPath = 'public' + path
 
     // Convert Uint8Array to Base64
@@ -331,7 +482,7 @@ async function uploadImageToGitHub(binaryData: Uint8Array, token: string, extens
             'Accept': 'application/vnd.github.v3+json',
         },
         body: JSON.stringify({
-            message: `Upload favicon ${githubPath}`,
+            message: `Upload ${prefix} ${githubPath}`,
             content: base64String,
             branch: branch,
         }),

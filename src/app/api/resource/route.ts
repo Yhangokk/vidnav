@@ -28,12 +28,12 @@ export async function POST(request: Request) {
             return new Response('Unauthorized', { status: 401 });
         }
 
-        const { image } = await request.json(); // Get the Base64 image
+        const { image, folder = 'assets', prefix = 'img' } = await request.json(); // Get the Base64 image, folder and prefix
         const base64Data = image.split(",")[1]; // Extract the Base64 part
         const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0)); // Convert Base64 to binary
 
         // 获取上传结果，包含路径和 commit hash
-        const { path: imageUrl, commitHash } = await uploadImageToGitHub(binaryData, session.user.accessToken);
+        const { path: imageUrl, commitHash } = await uploadImageToGitHub(binaryData, session.user.accessToken, folder, prefix);
 
         // Handle metadata
         const metadata = await getFileContent('src/navsphere/content/resource-metadata.json') as ResourceMetadata;
@@ -61,11 +61,14 @@ export async function POST(request: Request) {
 }
 
 // Function to upload image to GitHub
-async function uploadImageToGitHub(binaryData: Uint8Array, token: string): Promise<{ path: string, commitHash: string }> {
+async function uploadImageToGitHub(binaryData: Uint8Array, token: string, folder: string, prefix: string): Promise<{ path: string, commitHash: string }> {
     const owner = process.env.GITHUB_OWNER!;
     const repo = process.env.GITHUB_REPO!;
     const branch = process.env.GITHUB_BRANCH || 'main'
-    const path = `/assets/img_${Date.now()}.png`; // Generate a unique path for the image
+
+    // Ensure folder doesn't have leading/trailing slashes for clean path construction
+    const cleanFolder = folder.replace(/^\/+|\/+$/g, '');
+    const path = `/${cleanFolder}/${prefix}_${Date.now()}.png`; // Generate a unique path for the image
     const githubPath = 'public' + path;
 
     // Convert Uint8Array to Base64

@@ -62,6 +62,11 @@ const menuItems = [
     ]
   },
   {
+    title: "视频管理",
+    href: "/admin/videos",
+    icon: Monitor
+  },
+  {
     title: "资源管理",
     href: "/admin/resources",
     icon: Settings,

@@ -5,6 +5,16 @@ export interface NavigationSubItem {
   description?: string
   icon?: string
   enabled: boolean
+  videoConfig?: VideoConfig
+}
+
+export interface VideoConfig {
+  type: 'bilibili' | 'youtube'
+  videoId?: string // simplified ID for youtube or bvid for bilibili
+  bvid?: string
+  aid?: string
+  cid?: string
+  p?: number
 }
 
 export interface NavigationCategory {

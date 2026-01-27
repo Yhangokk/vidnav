@@ -1,0 +1,79 @@
+{
+    "navigationItems": [
+        {
+            "id": "featured",
+            "title": "精选视频",
+            "icon": "Star",
+            "description": "一级分类示例：直接展示视频列表",
+            "enabled": true,
+            "items": [
+                {
+                    "id": "y-sample",
+                    "title": "YouTube 示例",
+                    "href": "https://www.youtube.com",
+                    "description": "一级分类下的视频",
+                    "icon": "Flame",
+                    "enabled": true,
+                    "videoConfig": {
+                        "type": "youtube",
+                        "videoId": "dQw4w9WgXcQ"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "bilibili-zone",
+            "title": "B站专区",
+            "icon": "PlayCircle",
+            "description": "二级分类示例：包含子分类",
+            "enabled": true,
+            "items": [],
+            "subCategories": [
+                {
+                    "id": "b-tech",
+                    "title": "科技数码",
+                    "enabled": true,
+                    "items": [
+                        {
+                            "id": "b-sample-1",
+                            "title": "B站视频示例",
+                            "href": "https://www.bilibili.com/video/BV1ADzkBoEDS",
+                            "description": "二级分类下的视频",
+                            "icon": "/assets/icons/bilibili.svg",
+                            "enabled": true,
+                            "videoConfig": {
+                                "type": "bilibili",
+                                "bvid": "BV1ADzkBoEDS",
+                                "aid": "115949621610277",
+                                "cid": "35585262359",
+                                "p": 1
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "b-knowledge",
+                    "title": "知识科普",
+                    "enabled": true,
+                    "items": [
+                        {
+                            "id": "b-sample-2",
+                            "title": "B站视频示例 2",
+                            "href": "https://www.bilibili.com",
+                            "description": "另一个二级分类下的视频",
+                            "icon": "/assets/icons/bilibili.svg",
+                            "enabled": true,
+                            "videoConfig": {
+                                "type": "bilibili",
+                                "bvid": "BV1GJ411x7h7",
+                                "aid": "84267566",
+                                "cid": "145147963",
+                                "p": 1
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
