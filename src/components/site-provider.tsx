@@ -36,7 +36,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
         // 设置默认值
         setSiteInfo({
           basic: {
-            title: 'NavSphere',
+            title: 'VidNav',
             description: 'A modern navigation platform',
             keywords: 'navigation, platform, web, management'
           },

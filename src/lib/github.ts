@@ -15,7 +15,7 @@ export async function getFileContent(path: string) {
       headers: {
         Accept: 'application/vnd.github.v3.raw',
         Authorization: token ? `token ${token}` : '',
-        'User-Agent': 'NavSphere',
+        'User-Agent': 'VidNav',
       },
     })
 
@@ -63,7 +63,7 @@ export async function commitFile(
         headers: {
           Authorization: `token ${token}`,
           Accept: 'application/vnd.github.v3+json',
-          'User-Agent': 'NavSphere',
+          'User-Agent': 'VidNav',
         },
         cache: 'no-store', // 禁用缓存，确保获取最新的文件信息
       })
@@ -82,7 +82,7 @@ export async function commitFile(
           Authorization: `token ${token}`,
           Accept: 'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
-          'User-Agent': 'NavSphere',
+          'User-Agent': 'VidNav',
         },
         body: JSON.stringify({
           message,

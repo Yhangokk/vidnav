@@ -4,7 +4,7 @@ export const runtime = 'edge'
 
 const defaultConfig: SiteConfig = {
   basic: {
-    title: 'NavSphere',
+    title: 'VidNav',
     description: 'A modern navigation platform',
     keywords: 'navigation, platform, web, management'
   },

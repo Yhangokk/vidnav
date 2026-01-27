@@ -2,7 +2,7 @@ import type { SiteConfig } from '@/types/site'
 
 export const siteConfig: SiteConfig = {
   basic: {
-    title: 'NavSphere',
+    title: 'VidNav',
     description: 'A modern navigation platform',
     keywords: 'navigation, platform, web, management'
   },
