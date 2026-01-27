@@ -4,11 +4,21 @@ import { uint8ArrayToBase64 } from '@/lib/buffer-utils'
 
 export const runtime = 'edge'
 
+interface VideoConfig {
+    type: 'bilibili' | 'youtube'
+    videoId?: string
+    bvid?: string
+    aid?: string
+    cid?: string
+    p?: number
+}
+
 interface WebsiteMetadata {
     title: string
     description: string
     icon: string
     image?: string
+    videoConfig?: VideoConfig
 }
 
 export async function POST(request: Request) {
@@ -153,11 +163,22 @@ async function fetchBilibiliVideoInfo(videoId: { bvid?: string; aid?: string }):
 
         const videoData = data.data
 
+        // 获取第一个分P的cid
+        const firstPage = videoData.pages?.[0]
+        const cid = firstPage?.cid?.toString() || videoData.cid?.toString()
+
         return {
             title: videoData.title || '',
             description: videoData.desc || '',
             icon: '/assets/icons/bilibili.svg', // 使用本地 Bilibili 图标
-            image: videoData.pic || undefined // Bilibili 视频封面
+            image: videoData.pic || undefined, // Bilibili 视频封面
+            videoConfig: {
+                type: 'bilibili',
+                bvid: videoData.bvid,
+                aid: videoData.aid?.toString(),
+                cid: cid,
+                p: 1
+            }
         }
     } catch (error) {
         console.warn('Failed to fetch Bilibili video info:', error)

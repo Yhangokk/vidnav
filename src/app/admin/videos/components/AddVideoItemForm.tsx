@@ -137,6 +137,23 @@ export function AddVideoItemForm({ onSubmit, onCancel, defaultValues }: AddVideo
                 }
             }
 
+            // 自动填充嵌入播放配置
+            if (metadata.videoConfig) {
+                const config = metadata.videoConfig
+                // 启用嵌入播放
+                form.setValue('useVideoConfig', true)
+                form.setValue('videoConfig.type', config.type)
+
+                if (config.type === 'bilibili') {
+                    if (config.bvid) form.setValue('videoConfig.bvid', config.bvid)
+                    if (config.aid) form.setValue('videoConfig.aid', config.aid)
+                    if (config.cid) form.setValue('videoConfig.cid', config.cid)
+                    if (config.p) form.setValue('videoConfig.p', config.p)
+                } else if (config.type === 'youtube') {
+                    if (config.videoId) form.setValue('videoConfig.videoId', config.videoId)
+                }
+            }
+
             toast({
                 title: "成功",
                 description: "已自动获取视频信息"
