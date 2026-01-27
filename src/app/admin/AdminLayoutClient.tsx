@@ -19,6 +19,7 @@ import {
   Sun,
   Monitor,
   Database,
+  Inbox,
 } from "lucide-react"
 import { cn } from '@/lib/utils'
 import {
@@ -65,6 +66,11 @@ const menuItems = [
     title: "视频管理",
     href: "/admin/videos",
     icon: Monitor
+  },
+  {
+    title: "投稿审核",
+    href: "/admin/submissions",
+    icon: Inbox
   },
   {
     title: "资源管理",
