@@ -1,79 +1,30 @@
 {
-    "navigationItems": [
+  "navigationItems": [
+    {
+      "id": "1769515180615",
+      "title": "科技",
+      "icon": "PlayCircle",
+      "description": "",
+      "enabled": true,
+      "items": [
         {
-            "id": "featured",
-            "title": "精选视频",
-            "icon": "Star",
-            "description": "一级分类示例：直接展示视频列表",
-            "enabled": true,
-            "items": [
-                {
-                    "id": "y-sample",
-                    "title": "YouTube 示例",
-                    "href": "https://www.youtube.com",
-                    "description": "一级分类下的视频",
-                    "icon": "Flame",
-                    "enabled": true,
-                    "videoConfig": {
-                        "type": "youtube",
-                        "videoId": "dQw4w9WgXcQ"
-                    }
-                }
-            ]
+          "id": "1769515603260",
+          "title": "【唐伯虎点秋香】 4K 自购原碟修复 全网最清晰版本 国语中字周星驰 巩俐 陈百祥 郑佩佩 朱咪咪 梁家仁 苑琼丹 梁荣忠 黄一山 黄霑 吴镇宇_哔哩哔哩_bilibili",
+          "href": "https://www.bilibili.com/video/BV1ADzkBoEDS/?spm_id_from=333.1007.tianma.1-2-2.click&vd_source=3e256028a6bd06a466a4ca2412cd6f21",
+          "description": "【唐伯虎点秋香】 4K 自购原碟修复 全网最清晰版本 国语中字周星驰 巩俐 陈百祥 郑佩佩 朱咪咪 梁家仁 苑琼丹 梁荣忠 黄一山 黄霑 吴镇宇共计3条视频，包括：【唐伯虎点秋香】 4K 自购原碟修复 全网最清晰版本 国语中字 周星驰 巩俐 陈百祥 黄沾 郑佩佩、谢谢观看、感谢关注等，UP主更多精彩视频，请关注UP账号。",
+          "icon": "//i0.hdslb.com/bfs/archive/20ebc821b5ab8b9eda830f389b19de1a2c88a0fc.jpg@100w_100h_1c.png",
+          "enabled": true
         },
         {
-            "id": "bilibili-zone",
-            "title": "B站专区",
-            "icon": "PlayCircle",
-            "description": "二级分类示例：包含子分类",
-            "enabled": true,
-            "items": [],
-            "subCategories": [
-                {
-                    "id": "b-tech",
-                    "title": "科技数码",
-                    "enabled": true,
-                    "items": [
-                        {
-                            "id": "b-sample-1",
-                            "title": "B站视频示例",
-                            "href": "https://www.bilibili.com/video/BV1ADzkBoEDS",
-                            "description": "二级分类下的视频",
-                            "icon": "/assets/icons/bilibili.svg",
-                            "enabled": true,
-                            "videoConfig": {
-                                "type": "bilibili",
-                                "bvid": "BV1ADzkBoEDS",
-                                "aid": "115949621610277",
-                                "cid": "35585262359",
-                                "p": 1
-                            }
-                        }
-                    ]
-                },
-                {
-                    "id": "b-knowledge",
-                    "title": "知识科普",
-                    "enabled": true,
-                    "items": [
-                        {
-                            "id": "b-sample-2",
-                            "title": "B站视频示例 2",
-                            "href": "https://www.bilibili.com",
-                            "description": "另一个二级分类下的视频",
-                            "icon": "/assets/icons/bilibili.svg",
-                            "enabled": true,
-                            "videoConfig": {
-                                "type": "bilibili",
-                                "bvid": "BV1GJ411x7h7",
-                                "aid": "84267566",
-                                "cid": "145147963",
-                                "p": 1
-                            }
-                        }
-                    ]
-                }
-            ]
+          "id": "1769518082194",
+          "title": "【唐伯虎点秋香】 4K 自购原碟修复 全网最清晰版本 国语中字周星驰 巩俐 陈百祥 郑佩佩 朱咪咪 梁家仁 苑琼丹 梁荣忠 黄一山 黄霑 吴镇宇",
+          "href": "https://www.bilibili.com/video/BV1ADzkBoEDS/?spm_id_from=333.1007.tianma.1-2-2.click&vd_source=3e256028a6bd06a466a4ca2412cd6f21",
+          "description": "",
+          "icon": "/assets/cover/cover_1769518085708.jpg",
+          "enabled": true
         }
-    ]
+      ],
+      "subCategories": []
+    }
+  ]
 }
