@@ -65,12 +65,10 @@ export async function PUT(
             return NextResponse.json({ error: 'Item not found' }, { status: 404 })
         }
 
-        // 更新项目，保留原有子项
+        // 更新项目
         data.navigationItems[index] = {
             ...data.navigationItems[index],
-            ...updatedItem,
-            items: data.navigationItems[index].items,
-            subCategories: data.navigationItems[index].subCategories
+            ...updatedItem
         }
 
         await validateAndSaveVideosData(data, session.user.accessToken)
