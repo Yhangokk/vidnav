@@ -38,7 +38,11 @@ import { useTheme } from "next-themes"
 
 interface AdminLayoutClientProps {
   children: React.ReactNode
-  user: any
+  user: {
+    name?: string | null
+    email?: string | null
+    image?: string | null
+  }
 }
 
 const menuItems = [

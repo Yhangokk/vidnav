@@ -893,7 +893,7 @@ export default function SiteListPage() {
       const metadata = await response.json()
 
       // 根据forceUpdate决定是否覆盖已有信息
-      const updates: any = {}
+      const updates: Partial<{ name: string; description: string; icon: string }> = {}
       if (forceUpdate || !site.name) {
         updates.name = metadata.title
       }

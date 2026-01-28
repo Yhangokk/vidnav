@@ -2,6 +2,7 @@
 export const runtime = 'edge'
 
 import { useState, useEffect } from 'react'
+import { NavigationItem, NavigationSubItem, NavigationCategory } from '@/types/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { JsonEditor } from "@/components/ui/json-editor"
@@ -69,10 +70,10 @@ export default function DataManagementPage() {
       if (parsed.navigationItems) {
         const categories = parsed.navigationItems.length
         let items = 0
-        parsed.navigationItems.forEach((category: any) => {
+        parsed.navigationItems.forEach((category: NavigationItem) => {
           if (category.items) items += category.items.length
           if (category.subCategories) {
-            category.subCategories.forEach((sub: any) => {
+            category.subCategories.forEach((sub: NavigationCategory) => {
               if (sub.items) items += sub.items.length
             })
           }
@@ -102,6 +103,7 @@ export default function DataManagementPage() {
         throw new Error('加载数据失败')
       }
     } catch (error) {
+      console.error('Load data error:', error)
       toast({
         title: "错误",
         description: "加载导航数据失败",
@@ -194,6 +196,7 @@ export default function DataManagementPage() {
         throw new Error('保存失败')
       }
     } catch (error) {
+      console.error('Save data error:', error)
       toast({
         title: "错误",
         description: "保存数据失败",
@@ -239,6 +242,7 @@ export default function DataManagementPage() {
         description: "数据已下载到本地",
       })
     } catch (error) {
+      console.error('Download error:', error)
       toast({
         title: "错误",
         description: "下载失败",
@@ -289,6 +293,7 @@ export default function DataManagementPage() {
           description: `已上传文件: ${file.name}`,
         })
       } catch (error) {
+        console.error('File upload error:', error)
         toast({
           title: "错误",
           description: "文件内容不是有效的JSON格式",
@@ -316,7 +321,7 @@ export default function DataManagementPage() {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.json,application/json'
-    input.onchange = (e) => handleFileUpload(e as any)
+    input.onchange = (e) => handleFileUpload(e as unknown as React.ChangeEvent<HTMLInputElement>)
     input.click()
   }
 
@@ -651,12 +656,12 @@ export default function DataManagementPage() {
                                 <span className="text-muted-foreground">根分类:</span>
                                 <span className="font-mono">{data.navigationItems?.length || 0}</span>
                               </div>
-                              {data.navigationItems?.map((item: any, index: number) => (
+                              {data.navigationItems?.map((item: NavigationItem, index: number) => (
                                 <div key={index} className="ml-4 text-xs text-muted-foreground">
                                   <div className="flex justify-between">
                                     <span>• {item.title}</span>
                                     <span>
-                                      {(item.items?.length || 0) + (item.subCategories?.reduce((acc: number, sub: any) => acc + (sub.items?.length || 0), 0) || 0)} 项
+                                      {(item.items?.length || 0) + (item.subCategories?.reduce((acc: number, sub: NavigationCategory) => acc + (sub.items?.length || 0), 0) || 0)} 项
                                     </span>
                                   </div>
                                 </div>

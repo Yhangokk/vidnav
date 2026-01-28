@@ -12,7 +12,7 @@ import { useToast } from "@/registry/new-york/hooks/use-toast"
 import { Skeleton } from "@/registry/new-york/ui/skeleton"
 import useSWR from 'swr'
 import { NavigationItem } from "@/types/navigation"
-import { DragDropContext, Droppable } from '@hello-pangea/dnd'
+import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd'
 import { Plus, AlertTriangle, Inbox } from 'lucide-react'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/registry/new-york/ui/select"
 
@@ -134,7 +134,7 @@ export default function NavigationPage() {
     }
   }
 
-  const handleDragEnd = async (result: any) => {
+  const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return
 
     const sourceIndex = result.source.index
