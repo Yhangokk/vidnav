@@ -40,7 +40,16 @@
       "description": "",
       "enabled": true,
       "items": [],
-      "subCategories": []
+      "subCategories": [
+        {
+          "id": "61ed43d7-78f6-4eaa-881b-973c16a77f91",
+          "title": "语文",
+          "icon": "PlayCircle",
+          "description": "",
+          "enabled": true,
+          "items": []
+        }
+      ]
     },
     {
       "id": "1769594423824",
