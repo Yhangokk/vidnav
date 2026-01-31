@@ -1148,6 +1148,14 @@
               "href": "https://paveldogreat.github.io/WebGL-Fluid-Simulation/",
               "description": "一个显示流体动画的网页",
               "icon": "https://paveldogreat.github.io/logo.png"
+            },
+            {
+              "id": "site_1769831678755_pnv51732y",
+              "title": "500px",
+              "href": "https://500px.com/",
+              "description": "摄影照片",
+              "icon": "/assets/favicon_1769831652117.png",
+              "enabled": true
             }
           ]
         }
